@@ -18,6 +18,7 @@ import UserDashboard from "./pages/user/UserDashboard";
 import UserBookings from "./pages/user/UserBookings";
 import UserNotifications from "./pages/user/UserNotifications";
 import UserTrack from "./pages/user/UserTrack";
+import UserChat from "./pages/user/UserChat";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/user/bookings" element={<UserBookings />} />
           <Route path="/user/notifications" element={<UserNotifications />} />
           <Route path="/user/track" element={<UserTrack />} />
+          <Route path="/user/chat" element={<UserChat />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

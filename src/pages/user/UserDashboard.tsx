@@ -11,6 +11,7 @@ import {
   BookOpen,
   LogOut,
   ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TripStatusBadge from "@/components/dashboard/TripStatusBadge";
@@ -162,24 +163,33 @@ const UserDashboard = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-2 gap-3"
+          className="grid grid-cols-3 gap-3"
         >
           <button
             onClick={() => navigate("/user/bookings")}
             className="glass-card-solid group p-4 text-left transition-all duration-200 hover:border-primary/20"
           >
             <BookOpen className="h-5 w-5 text-primary mb-2" />
-            <p className="text-sm font-semibold text-foreground">My Bookings</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">View all trips</p>
+            <p className="text-sm font-semibold text-foreground">Bookings</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">View all</p>
+          </button>
+
+          <button
+            onClick={() => navigate("/user/chat")}
+            className="glass-card-solid group p-4 text-left transition-all duration-200 hover:border-primary/20"
+          >
+            <MessageCircle className="h-5 w-5 text-accent mb-2" />
+            <p className="text-sm font-semibold text-foreground">Route Chat</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Group</p>
           </button>
 
           <button
             onClick={() => navigate("/user/notifications")}
             className="glass-card-solid group p-4 text-left transition-all duration-200 hover:border-accent/20"
           >
-            <Bell className="h-5 w-5 text-accent mb-2" />
-            <p className="text-sm font-semibold text-foreground">Notifications</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{unreadCount} unread</p>
+            <Bell className="h-5 w-5 text-coral mb-2" />
+            <p className="text-sm font-semibold text-foreground">Alerts</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{unreadCount} new</p>
           </button>
         </motion.div>
 
