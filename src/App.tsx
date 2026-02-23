@@ -13,6 +13,11 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminReports from "./pages/admin/AdminReports";
 import DriverLogin from "./pages/driver/DriverLogin";
 import DriverDashboard from "./pages/driver/DriverDashboard";
+import UserLogin from "./pages/user/UserLogin";
+import UserDashboard from "./pages/user/UserDashboard";
+import UserBookings from "./pages/user/UserBookings";
+import UserNotifications from "./pages/user/UserNotifications";
+import UserTrack from "./pages/user/UserTrack";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +41,13 @@ const App = () => (
           {/* Driver Routes */}
           <Route path="/driver/login" element={<DriverLogin />} />
           <Route path="/driver" element={<DriverDashboard />} />
+          
+          {/* User Routes */}
+          <Route path="/user/login" element={<UserLogin />} />
+          <Route path="/user" element={<UserDashboard />} />
+          <Route path="/user/bookings" element={<UserBookings />} />
+          <Route path="/user/notifications" element={<UserNotifications />} />
+          <Route path="/user/track" element={<UserTrack />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

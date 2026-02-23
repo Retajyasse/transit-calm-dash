@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Bus, Shield, ArrowRight } from "lucide-react";
+import { Bus, Shield, ArrowRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -35,11 +35,30 @@ const Index = () => {
         </p>
 
         {/* Portal Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <motion.button
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            onClick={() => navigate("/user/login")}
+            className="glass-card-solid group p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-[0_4px_24px_hsl(var(--primary)/0.1)]"
+          >
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <User className="h-5 w-5" />
+            </div>
+            <h2 className="mb-1 text-base font-bold text-foreground">Student Portal</h2>
+            <p className="mb-4 text-xs text-muted-foreground">
+              Book rides, track buses & manage trips
+            </p>
+            <div className="flex items-center gap-1 text-xs font-semibold text-primary">
+              Sign In <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+            </div>
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
             onClick={() => navigate("/driver/login")}
             className="glass-card-solid group p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-[0_4px_24px_hsl(var(--primary)/0.1)]"
           >
@@ -56,9 +75,9 @@ const Index = () => {
           </motion.button>
 
           <motion.button
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
             onClick={() => navigate("/admin")}
             className="glass-card-solid group p-6 text-left transition-all duration-300 hover:border-accent/30 hover:shadow-[0_4px_24px_hsl(var(--accent)/0.1)]"
           >
