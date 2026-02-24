@@ -2,17 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Bus,
-  ArrowLeft,
   Send,
   Users,
   MapPin,
-  SmilePlus,
+  Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNavigate } from "react-router-dom";
+import UserLayout from "@/components/layout/UserLayout";
 
 interface ChatMessage {
   id: number;
@@ -22,6 +21,8 @@ interface ChatMessage {
   time: string;
   isMe: boolean;
 }
+
+const adminAnnouncement = "🚌 Reminder: Return trip at 7:00 PM has been added for Wednesday. Register before 2:00 PM!";
 
 const initialMessages: ChatMessage[] = [
   { id: 1, sender: "Omar K.", initials: "OK", message: "Anyone know if the bus was late yesterday on the Aqaleem route?", time: "8:12 AM", isMe: false },
@@ -41,7 +42,6 @@ const onlineMembers = [
 ];
 
 const UserChat = () => {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState("");
   const [showMembers, setShowMembers] = useState(false);
@@ -66,43 +66,33 @@ const UserChat = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/user")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-              <MapPin className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold text-foreground">Aqaleem → Stadium</h1>
-              <p className="text-[10px] text-muted-foreground">{onlineMembers.length} members online</p>
-            </div>
+    <UserLayout title="Route Chat" subtitle="Aqaleem → Stadium">
+      <div className="max-w-2xl flex flex-col" style={{ height: "calc(100vh - 10rem)" }}>
+        {/* Sticky admin announcement */}
+        <div className="rounded-xl border border-primary/15 bg-primary/5 p-3 flex items-start gap-3 mb-4">
+          <Megaphone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-0.5">Admin Announcement</p>
+            <p className="text-xs text-foreground">{adminAnnouncement}</p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => setShowMembers(!showMembers)}
-        >
-          <Users className="h-4 w-4" />
-        </Button>
-      </header>
 
-      {/* Members drawer */}
-      {showMembers && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className="border-b border-border bg-card px-4 py-3"
-        >
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Online Now</p>
-          <div className="flex flex-wrap gap-2">
+        {/* Online members toggle */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-50" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+            </span>
+            <span className="text-xs text-muted-foreground">{onlineMembers.length} online</span>
+          </div>
+          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setShowMembers(!showMembers)}>
+            <Users className="h-3.5 w-3.5" /> Members
+          </Button>
+        </div>
+
+        {showMembers && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mb-3 flex flex-wrap gap-2">
             {onlineMembers.map((m) => (
               <div key={m.name} className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1">
                 <span className="relative flex h-2 w-2">
@@ -112,60 +102,40 @@ const UserChat = () => {
                 <span className="text-xs font-medium text-foreground">{m.name}</span>
               </div>
             ))}
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
 
-      {/* Messages */}
-      <ScrollArea className="flex-1 px-4 py-4">
-        <div className="mx-auto max-w-lg space-y-3">
-          {/* Date separator */}
-          <div className="flex items-center gap-3 py-2">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] font-medium text-muted-foreground">Today</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
+        {/* Messages */}
+        <ScrollArea className="flex-1 rounded-xl border border-border bg-card/50 p-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 py-2">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] font-medium text-muted-foreground">Today</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-2 ${msg.isMe ? "flex-row-reverse" : ""}`}
-            >
-              {!msg.isMe && (
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarFallback className="bg-secondary text-[10px] font-semibold text-foreground">
-                    {msg.initials}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <div className={`max-w-[75%] ${msg.isMe ? "items-end" : "items-start"}`}>
+            {messages.map((msg) => (
+              <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-2 ${msg.isMe ? "flex-row-reverse" : ""}`}>
                 {!msg.isMe && (
-                  <p className="mb-0.5 text-[10px] font-semibold text-primary">{msg.sender}</p>
+                  <Avatar className="h-7 w-7 shrink-0">
+                    <AvatarFallback className="bg-secondary text-[10px] font-semibold text-foreground">{msg.initials}</AvatarFallback>
+                  </Avatar>
                 )}
-                <div
-                  className={`rounded-2xl px-3.5 py-2 text-sm ${
-                    msg.isMe
-                      ? "rounded-br-md bg-primary text-primary-foreground"
-                      : "rounded-bl-md bg-card border border-border text-foreground"
-                  }`}
-                >
-                  {msg.message}
+                <div className={`max-w-[75%] ${msg.isMe ? "items-end" : "items-start"}`}>
+                  {!msg.isMe && <p className="mb-0.5 text-[10px] font-semibold text-primary">{msg.sender}</p>}
+                  <div className={`rounded-2xl px-3.5 py-2 text-sm ${msg.isMe ? "rounded-br-md bg-primary text-primary-foreground" : "rounded-bl-md bg-secondary border border-border text-foreground"}`}>
+                    {msg.message}
+                  </div>
+                  <p className={`mt-0.5 text-[9px] text-muted-foreground ${msg.isMe ? "text-right" : ""}`}>{msg.time}</p>
                 </div>
-                <p className={`mt-0.5 text-[9px] text-muted-foreground ${msg.isMe ? "text-right" : ""}`}>
-                  {msg.time}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
-      </ScrollArea>
+              </motion.div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+        </ScrollArea>
 
-      {/* Input */}
-      <div className="border-t border-border bg-background/90 px-4 py-3 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-lg items-center gap-2">
+        {/* Input */}
+        <div className="flex items-center gap-2 mt-4">
           <Input
             placeholder="Type a message..."
             value={newMessage}
@@ -173,18 +143,12 @@ const UserChat = () => {
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             className="flex-1 rounded-full border-border bg-card text-sm"
           />
-          <Button
-            variant="glow"
-            size="icon"
-            className="h-10 w-10 shrink-0 rounded-full"
-            onClick={handleSend}
-            disabled={!newMessage.trim()}
-          >
+          <Button variant="glow" size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={handleSend} disabled={!newMessage.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </div>
+    </UserLayout>
   );
 };
 

@@ -15,10 +15,15 @@ import DriverLogin from "./pages/driver/DriverLogin";
 import DriverDashboard from "./pages/driver/DriverDashboard";
 import UserLogin from "./pages/user/UserLogin";
 import UserDashboard from "./pages/user/UserDashboard";
-import UserBookings from "./pages/user/UserBookings";
-import UserNotifications from "./pages/user/UserNotifications";
+import UserBook from "./pages/user/UserBook";
+import UserTrips from "./pages/user/UserTrips";
+import UserRouteDetails from "./pages/user/UserRouteDetails";
 import UserTrack from "./pages/user/UserTrack";
+import UserAttendance from "./pages/user/UserAttendance";
+import UserNotifications from "./pages/user/UserNotifications";
 import UserChat from "./pages/user/UserChat";
+import UserSupport from "./pages/user/UserSupport";
+import UserSettings from "./pages/user/UserSettings";
 
 const queryClient = new QueryClient();
 
@@ -46,10 +51,15 @@ const App = () => (
           {/* User Routes */}
           <Route path="/user/login" element={<UserLogin />} />
           <Route path="/user" element={<UserDashboard />} />
-          <Route path="/user/bookings" element={<UserBookings />} />
-          <Route path="/user/notifications" element={<UserNotifications />} />
+          <Route path="/user/book" element={<UserBook />} />
+          <Route path="/user/trips" element={<UserTrips />} />
+          <Route path="/user/route" element={<UserRouteDetails />} />
           <Route path="/user/track" element={<UserTrack />} />
+          <Route path="/user/attendance" element={<UserAttendance />} />
+          <Route path="/user/notifications" element={<UserNotifications />} />
           <Route path="/user/chat" element={<UserChat />} />
+          <Route path="/user/support" element={<UserSupport />} />
+          <Route path="/user/settings" element={<UserSettings />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
