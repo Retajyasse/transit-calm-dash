@@ -1,8 +1,12 @@
 import AdminLayout from "@/components/layout/AdminLayout";
 import LiveMap from "@/components/dashboard/LiveMap";
-import { motion } from "framer-motion";
-import { MapPin, Plus, Edit2, Trash2, Bus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Plus, Edit2, Trash2, Bus, X, Clock, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 const routes = [
   {
@@ -44,15 +48,154 @@ const routes = [
 ];
 
 const AdminRoutes = () => {
+  const [open, setOpen] = useState(false);
+  const [pickupPoints, setPickupPoints] = useState<string[]>([""]);
+  const [routeName, setRouteName] = useState("");
+  const [distance, setDistance] = useState("");
+  const [duration, setDuration] = useState("");
+
+  const addPickupPoint = () => setPickupPoints([...pickupPoints, ""]);
+  const removePickupPoint = (index: number) => {
+    if (pickupPoints.length > 1) {
+      setPickupPoints(pickupPoints.filter((_, i) => i !== index));
+    }
+  };
+  const updatePickupPoint = (index: number, value: string) => {
+    const updated = [...pickupPoints];
+    updated[index] = value;
+    setPickupPoints(updated);
+  };
+
+  const handleSubmit = () => {
+    setOpen(false);
+    setRouteName("");
+    setDistance("");
+    setDuration("");
+    setPickupPoints([""]);
+  };
+
   return (
     <AdminLayout title="Routes" subtitle="Manage bus routes and pickup points">
       {/* Actions */}
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{routes.length} routes configured</p>
-        <Button variant="glow" size="sm">
-          <Plus className="h-4 w-4" />
-          Add Route
-        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="glow" size="sm">
+              <Plus className="h-4 w-4" />
+              Add Route
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="glass-card-solid border-border sm:max-w-[520px] p-0 overflow-hidden">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
+              <DialogTitle className="flex items-center gap-2 text-foreground">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <Route className="h-4 w-4 text-primary" />
+                </div>
+                Add New Route
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
+              {/* Route Name */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Route Name</Label>
+                <Input
+                  placeholder="e.g. Aqaleem → Stadium"
+                  value={routeName}
+                  onChange={(e) => setRouteName(e.target.value)}
+                  className="bg-secondary/50 border-border/50 focus:border-primary"
+                />
+              </div>
+
+              {/* Distance & Duration */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Distance</Label>
+                  <Input
+                    placeholder="e.g. 12.5 km"
+                    value={distance}
+                    onChange={(e) => setDistance(e.target.value)}
+                    className="bg-secondary/50 border-border/50 focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Est. Duration</Label>
+                  <div className="relative">
+                    <Input
+                      placeholder="e.g. 25 min"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      className="bg-secondary/50 border-border/50 focus:border-primary pr-9"
+                    />
+                    <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pickup Points */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pickup Points</Label>
+                  <button
+                    onClick={addPickupPoint}
+                    className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Stop
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <AnimatePresence>
+                    {pickupPoints.map((point, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <div className="flex items-center gap-2 flex-1">
+                          <div className="flex flex-col items-center">
+                            <div className="h-3 w-3 rounded-full border-2 border-primary bg-primary/20" />
+                            {index < pickupPoints.length - 1 && (
+                              <div className="w-px h-4 bg-border" />
+                            )}
+                          </div>
+                          <Input
+                            placeholder={`Stop ${index + 1}`}
+                            value={point}
+                            onChange={(e) => updatePickupPoint(index, e.target.value)}
+                            className="bg-secondary/50 border-border/50 focus:border-primary flex-1"
+                          />
+                        </div>
+                        {pickupPoints.length > 1 && (
+                          <button
+                            onClick={() => removePickupPoint(index)}
+                            className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-border/50 flex items-center justify-end gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="glow" size="sm" onClick={handleSubmit}>
+                <Plus className="h-4 w-4" />
+                Create Route
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
