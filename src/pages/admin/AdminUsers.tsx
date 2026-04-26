@@ -9,9 +9,39 @@ import {
   Phone,
   Filter,
   Download,
+  Pencil,
+  Trash2,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 type UserRole = "student" | "driver";
 
@@ -26,7 +56,7 @@ interface MockUser {
   avatar: string;
 }
 
-const mockUsers: MockUser[] = [
+const initialUsers: MockUser[] = [
   { id: "U-001", name: "Sara Ahmed", email: "sara@uni.edu", phone: "+962 79 123 4567", role: "student", status: "active", joinDate: "Jan 15, 2026", avatar: "S" },
   { id: "U-002", name: "Ahmad Hassan", email: "ahmad.h@smartbus.com", phone: "+962 79 234 5678", role: "driver", status: "active", joinDate: "Dec 3, 2025", avatar: "A" },
   { id: "U-003", name: "Lina Khalil", email: "lina.k@uni.edu", phone: "+962 79 345 6789", role: "student", status: "active", joinDate: "Jan 20, 2026", avatar: "L" },
@@ -40,8 +70,19 @@ const mockUsers: MockUser[] = [
 const AdminUsers = () => {
   const [activeTab, setActiveTab] = useState<"all" | UserRole>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState<MockUser[]>(initialUsers);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState<{ name: string; email: string; phone: string; role: UserRole; status: "active" | "inactive" }>({
+    name: "",
+    email: "",
+    phone: "",
+    role: "student",
+    status: "active",
+  });
 
-  const filteredUsers = mockUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     const matchesTab = activeTab === "all" || user.role === activeTab;
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -50,10 +91,71 @@ const AdminUsers = () => {
   });
 
   const tabs: { key: "all" | UserRole; label: string; count: number }[] = [
-    { key: "all", label: "All Users", count: mockUsers.length },
-    { key: "student", label: "Students", count: mockUsers.filter((u) => u.role === "student").length },
-    { key: "driver", label: "Drivers", count: mockUsers.filter((u) => u.role === "driver").length },
+    { key: "all", label: "All Users", count: users.length },
+    { key: "student", label: "Students", count: users.filter((u) => u.role === "student").length },
+    { key: "driver", label: "Drivers", count: users.filter((u) => u.role === "driver").length },
   ];
+
+  const resetForm = () => {
+    setEditingId(null);
+    setForm({ name: "", email: "", phone: "", role: "student", status: "active" });
+  };
+
+  const handleDialogOpenChange = (next: boolean) => {
+    setDialogOpen(next);
+    if (!next) resetForm();
+  };
+
+  const handleEdit = (user: MockUser) => {
+    setEditingId(user.id);
+    setForm({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      status: user.status,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (!deleteId) return;
+    setUsers((prev) => prev.filter((u) => u.id !== deleteId));
+    toast({ title: "User removed", description: `${deleteId} has been deleted.` });
+    setDeleteId(null);
+  };
+
+  const handleSubmit = () => {
+    if (!form.name.trim() || !form.email.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Name and email are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editingId) {
+      setUsers((prev) => prev.map((u) => (u.id === editingId ? { ...u, ...form } : u)));
+      toast({ title: "User updated", description: `${form.name} has been saved.` });
+    } else {
+      const nextId = `U-${String(users.length + 1).padStart(3, "0")}`;
+      const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      setUsers((prev) => [
+        ...prev,
+        {
+          id: nextId,
+          ...form,
+          joinDate: today,
+          avatar: form.name.trim().charAt(0).toUpperCase() || "U",
+        },
+      ]);
+      toast({ title: "User added", description: `${form.name} has joined SmartBus.` });
+    }
+
+    setDialogOpen(false);
+    resetForm();
+  };
 
   return (
     <AdminLayout title="Users" subtitle="Manage students and drivers">
@@ -77,11 +179,98 @@ const AdminUsers = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="glow" size="sm">
-            <Plus className="h-4 w-4" />
-            Add User
-          </Button>
-          <Button variant="outline" size="sm">
+          <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+            <DialogTrigger asChild>
+              <Button variant="glow" size="sm">
+                <Plus className="h-4 w-4" />
+                Add User
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="glass-card-solid border-border sm:max-w-[480px] p-0 overflow-hidden">
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
+                <DialogTitle className="flex items-center gap-2 text-foreground">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                    <UserPlus className="h-4 w-4 text-primary" />
+                  </div>
+                  {editingId ? "Edit User" : "Add New User"}
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Full Name</Label>
+                  <Input
+                    placeholder="e.g. Sara Ahmed"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="bg-secondary/50 border-border/50 focus:border-primary"
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</Label>
+                    <Input
+                      type="email"
+                      placeholder="user@uni.edu"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="bg-secondary/50 border-border/50 focus:border-primary"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Phone</Label>
+                    <Input
+                      placeholder="+962 79 000 0000"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      className="bg-secondary/50 border-border/50 focus:border-primary"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</Label>
+                    <select
+                      value={form.role}
+                      onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
+                      className="h-10 w-full rounded-md border border-border/50 bg-secondary/50 px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+                    >
+                      <option value="student">Student</option>
+                      <option value="driver">Driver</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</Label>
+                    <select
+                      value={form.status}
+                      onChange={(e) => setForm({ ...form, status: e.target.value as "active" | "inactive" })}
+                      className="h-10 w-full rounded-md border border-border/50 bg-secondary/50 px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-border/50 flex items-center justify-end gap-3">
+                <Button variant="ghost" size="sm" onClick={() => handleDialogOpenChange(false)}>
+                  Cancel
+                </Button>
+                <Button variant="glow" size="sm" onClick={handleSubmit}>
+                  <Plus className="h-4 w-4" />
+                  {editingId ? "Save Changes" : "Create User"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              toast({ title: "Export started", description: `${filteredUsers.length} users will be exported as CSV.` })
+            }
+          >
             <Download className="h-4 w-4" />
             Export
           </Button>
@@ -175,9 +364,27 @@ const AdminUsers = () => {
                 </td>
                 <td className="px-5 py-4 text-sm text-muted-foreground">{user.joinDate}</td>
                 <td className="px-5 py-4 text-right">
-                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="glass-card-solid border-border">
+                      <DropdownMenuItem onClick={() => handleEdit(user)} className="cursor-pointer">
+                        <Pencil className="h-3.5 w-3.5 mr-2" />
+                        Edit User
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setDeleteId(user.id)}
+                        className="cursor-pointer text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-2" />
+                        Delete User
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </motion.tr>
             ))}
@@ -187,7 +394,7 @@ const AdminUsers = () => {
         {/* Pagination */}
         <div className="flex items-center justify-between border-t border-border/50 px-5 py-3">
           <p className="text-xs text-muted-foreground">
-            Showing {filteredUsers.length} of {mockUsers.length} users
+            Showing {filteredUsers.length} of {users.length} users
           </p>
           <div className="flex gap-1">
             <Button variant="ghost" size="sm" className="text-xs">Previous</Button>
@@ -197,6 +404,26 @@ const AdminUsers = () => {
           </div>
         </div>
       </motion.div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent className="glass-card-solid border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the account from SmartBus. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
